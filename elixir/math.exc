@@ -1,0 +1,25 @@
+defmodule Math do
+
+  def sum(a \\ 0, b \\ 0) 
+
+  def sum(a, b) when a>0 do
+    a - b
+  end
+
+  def sum(a, b) do
+    a + b
+  end
+
+  def fact(a) when a == 0 do
+    1
+  end
+
+  def fact(a) do
+    a * fact(a-1)
+  end
+end
+
+IO.puts Math.sum(1, 2)
+IO.puts Math.fact(0)
+IO.puts Math.fact(10)
+IO.puts Math.fact(30000)
