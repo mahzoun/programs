@@ -38,11 +38,11 @@ _start:
 		mov r10w, [esi]
 		mov r11w, [esi + 2]
 		cmp r10w, r11w
-		jng endloop
+		jle continue
 		mov [esi], r11w
 		mov [esi + 2], r10w
 
-	endloop:
+	continue:
 		add esi,2
 		cmp	r9w, cx
 		jne innerloop
