@@ -1,10 +1,13 @@
-section .data
-	input_max_size equ 25
+section .data	
 	operator db 0
+    dummy1 dq 0
 	first_operand dw 0
+    dummy2 dq 0
 	second_operand dw 0
+    dummy dq 0
 	input_size dw 0
 	output_size dw 0
+    input_max_size equ word 25
 section .bss
 	input resb input_max_size
 	output resb input_max_size
@@ -14,9 +17,18 @@ section .text
 	global _start
 
 _start:
+    run:
+    xor esi, esi
+    xor r9, r9
+    mov [second_operand], word 0
+    mov [operator], byte 0
+    debug1:
 	call INPUT
-	call CALCULATE
-	call OUTPUT
+	debug2:
+    call CALCULATE
+	debug3:
+    call OUTPUT
+    jmp run
 
 exit:
 	mov ebx, 0
@@ -25,6 +37,7 @@ exit:
 
 INPUT:
 	;clean input buffer
+    xor rcx, rcx
 	mov cx, input_max_size
 	mov r9d, esi
 	mov esi, input
@@ -33,15 +46,15 @@ INPUT:
 		mov [esi], r8d
 		inc esi
 		loop clean
+    debug:
 	mov esi, r9d
-	
 	mov eax, 3                              
 	mov ebx, 0                              
 	mov ecx, input                           
 	mov rdx, input_max_size
 	int 80h
 	mov [input_size], ax
-	ret
+    ret
 
 OUTPUT:
 	mov eax, 4
@@ -69,7 +82,7 @@ CAL_FIRST_OPERAND:
 	cal_first_op:	
 		cmp byte [esi], byte 43 ;r8d is +
 		je fin1
-		cmp byte [esi], byte 45 ;r8d is -
+        cmp byte [esi], byte 45 ;r8d is +
 		je fin1
 		cmp byte [esi], byte 42 ;r8d is *
 		je fin1
@@ -86,7 +99,10 @@ CAL_FIRST_OPERAND:
 		xor r8, r8
 		mov r8b, byte [esi]
 		mov [operator], r8b
+        cmp r9w, 0
+        je not_first
 		mov [first_operand], r9w
+        not_first:
 		ret
 	
 CAL_SECOND_OPERAND:
@@ -154,49 +170,25 @@ CAL_RESULT:
 		xor rbx, rbx
 		mov bx, 10
 		xor r10, r10; size of output
+        mov [first_operand], ax
 		create_output:
-			div bx
+			xor dx, dx
+            div bx
 			mov [esi], dx
 			inc esi
 			cmp ax, 0
 			jne create_output
+        xor edi, edi
+        mov edi, output
 		print_output:
+            dec esi
 			inc r10
 			mov [output_size], r10w
-			xor edi, edi
-			mov edi, output
 			mov cl, [esi]
+            add cl, 48
 			mov [edi], cl
-			dec esi
 			inc edi
 			cmp esi, temp_array
 			jne print_output
-	finilize2:
-		ret
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        ret
+        
