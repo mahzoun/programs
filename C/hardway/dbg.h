@@ -8,7 +8,7 @@
 #ifdef NDEBUG
 #define debug(M, ...)
 #else
-#define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: ", M "\n", \
+#define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", \
         __FILE__, __LINE__, ##__VA_ARGS__)
 #endif
 
@@ -33,7 +33,7 @@
 
 #define check_mem(A) check((A), "Out of memory.")
 
-#define check_debug(A, M, ...) if(!(A) { debug(M, ##__VA_ARGS__);\
+#define check_debug(A, M, ...) if(!(A)) { debug(M, ##__VA_ARGS__);\
         errno=0; goto error;}
 
 #endif
