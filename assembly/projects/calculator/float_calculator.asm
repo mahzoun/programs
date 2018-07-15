@@ -80,35 +80,66 @@ CALCULATE:
 CAL_FIRST_OPERAND:
 	xor rsi, rsi ;esi is the pointer to current char in input
 	mov esi, input
-	xor r9, r9
+	xor r9, r9 ;r9 will calculate number
 	xor r10, r10
-	mov r10, 10
+    xor r12, r12 ; r12 = len(r9)
+	mov r10, 10 
+    mov r11, 1
+    ; check if input is negative (first char is -)
+    cmp byte [esi], byte 45 ;-
+    je negativate
 	cal_first_op:	
-		cmp byte [esi], byte 43 ;r8d is +
+		cmp byte [esi], byte 43 ;+
 		je fin1
-        cmp byte [esi], byte 45 ;r8d is +
+        cmp byte [esi], byte 45 ;-
 		je fin1
-		cmp byte [esi], byte 42 ;r8d is *
+		cmp byte [esi], byte 42 ;*
 		je fin1
-		cmp byte [esi], byte 47 ;r8d is /
+		cmp byte [esi], byte 47 ;/
 		je fin1
+        cmp byte [esi], byte 56 ;. 
+        je cal_rest
 		xchg r9, rax
 		mul r10d
 		xchg rax, r9
 		add r9b, byte [esi]
 		sub r9d, 48
+        inc r10
 		inc esi
 		loop cal_first_op
-	fin1:
+    ; if code gets here, something is wrong :)
+    jmp err
+    cal_rest:
+        ; first r9 should change to float, the number will be r9.xxxx
+        fild r9
+        xor r9, r9
+        xor r10, r10
+        jmp cal_first_op
+
+    negativate:
+        mov r11, -1
+	
+    fin1: ;st0 = st0 + r9 * 10 ^ (-r12)
+        fild r9
+        xchg r12, rcx
+        calc_op1_float:
+            fmul 0.1
+            loop calc_op1_float
+        xchg rcx, r12
+        fadd st0, st1
+        fmul r11
 		xor r8, r8
 		mov r8b, byte [esi]
 		mov [operator], r8b
         cmp r9w, 0
         je not_first
-		mov [first_operand], r9w
+        fstp op11
         not_first:
 		ret
-	
+    err:
+        jmp exit
+
+
 CAL_SECOND_OPERAND:
 	xor r9, r9
 	xor r10, r10
