@@ -103,6 +103,9 @@ CAL_FIRST_OPERAND:
         add r15, r14
 		loop cal_first_op
 	fin1:
+        cmp r15w, 0
+        je floater12
+        dec r15
 		xor r8, r8
 		mov r8b, byte [esi]
 		mov [operator], r8b
@@ -117,6 +120,9 @@ CAL_FIRST_OPERAND:
     floater1:
         inc r14
         jmp cont
+    floater12:
+        inc r15
+        jmp fin1
 	
 CAL_SECOND_OPERAND:
 	xor r9, r9
@@ -141,13 +147,49 @@ CAL_SECOND_OPERAND:
         add r13, r12
 		loop cal_second_op
 	fin2:
+        ;cmp r13, 0
+        ;je floater22
+        dec r13
+        cmp r13, -1
+        jne skiper
+        inc r13
+        skiper:
 		mov [Y], r9w
 		ret
     floater2:
     inc r12
     jmp cont2
+    ;floater22:
+    ;inc r13
+    ;inc r13
+    ;jmp fin2
 	
 CAL_RESULT:
+    cmp r13, r15             
+    jg multfirst
+    je contres
+
+    multsec:
+        cmp r13, r15
+        je contres
+        xchg rax, [X]
+        mov [Y2], word 10
+        mul word [Y2]
+        inc r13
+        xchg [X], rax
+        jmp multsec
+    
+    multfirst:
+        cmp r13, r15
+        je contres
+        xchg rax, [Y]
+        mov [Y2], word 10
+        mul word [Y2]
+        inc r15
+        xchg [Y], rax
+        jmp multfirst
+
+    contres:
 	xor r8, r8 ;first operand
 	xor r9, r9 ; second operand
 	xor r10, r10 ; operator
@@ -176,7 +218,8 @@ CAL_RESULT:
 		mov rax, r8
 		jmp finilize
 	multiplication:
-        add r15, r14
+        add r15, r13
+        debuggg:
 		xor rax, rax
 		mov rax, r8
 		mul r9
@@ -198,12 +241,11 @@ CAL_RESULT:
 		mov bx, 10
 		xor r10, r10; size of output
         mov [X], ax
-        ;dec r15 
 		create_output:
-            inc r14
             cmp r14, r15
             je put_dot
             contoutput:
+            inc r14
 			xor dx, dx
             div bx
 			mov [esi], dx
