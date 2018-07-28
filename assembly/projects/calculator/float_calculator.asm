@@ -170,23 +170,23 @@ CAL_RESULT:
     je contres
 
     multsec:
-        cmp r13, r15
-        je contres
-        xchg rax, [X]
-        mov [Y2], word 10
-        mul word [Y2]
-        inc r13
-        xchg [X], rax
-        jmp multsec
-    
-    multfirst:
-        cmp r13, r15
+        cmp r13, r13
         je contres
         xchg rax, [Y]
         mov [Y2], word 10
         mul word [Y2]
-        inc r15
+        inc r13
         xchg [Y], rax
+        jmp multsec
+    
+    multfirst:
+        cmp r13, r13
+        je contres
+        xchg rax, [X]
+        mov [Y2], word 10
+        mul word [Y2]
+        inc r15
+        xchg [X], rax
         jmp multfirst
 
     contres:
@@ -225,8 +225,7 @@ CAL_RESULT:
 		mul r9
 		jmp finilize
 	division:
-        cdq
-        xor r15, r13
+
         sub r15, r13
 		xor rax, rax
 		mov rax, r8
