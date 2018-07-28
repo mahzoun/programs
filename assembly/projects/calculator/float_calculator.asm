@@ -1,14 +1,11 @@
-section .data
-;first operand = op11.op22
-	op11 dq 0 
-    op12 dq 0
-;second operand = op21.op22
-    op21 dq 0
-    op22 dq 0
-;operator = {+, -, /, *}
-    operator db 0
-	input_size db 0
-	output_size db 0
+section .data	
+	operator dq 0
+	X dq 0
+	X2 dq 0
+	Y dq 0
+    Y2 dq 0
+	input_size dd 0
+	output_size dd 0
     input_max_size equ word 100
 
 section .bss
@@ -23,8 +20,7 @@ _start:
     run:
     xor esi, esi
     xor r9, r9
-    mov [op21], qword 0
-    mov [op22], qword 0
+    mov [Y], word 0
     mov [operator], byte 0
     debug1:
 	call INPUT
@@ -72,7 +68,7 @@ CALCULATE:
 	;calculate operand
 	call CAL_FIRST_OPERAND
 	call CAL_SECOND_OPERAND
- 	mov [second_operand], r9w	
+ 	mov [Y], r9	
 	;calculate the result and start over
 	call CAL_RESULT
 	ret
@@ -80,92 +76,83 @@ CALCULATE:
 CAL_FIRST_OPERAND:
 	xor rsi, rsi ;esi is the pointer to current char in input
 	mov esi, input
-	xor r9, r9 ;r9 will calculate number
+	xor r9, r9
 	xor r10, r10
-    xor r12, r12 ; r12 = len(r9)
-	mov r10, 10 
-    mov r11, 1
-    ; check if input is negative (first char is -)
-    cmp byte [esi], byte 45 ;-
-    je negativate
-	cal_first_op:	
-		cmp byte [esi], byte 43 ;+
+	mov r10, 10
+    mov [X2], r15
+    xor r15, r15 ; to save number of digits after first oprenad
+    xor r14, r14
+	cal_first_op:
+        cmp byte [esi], byte 46 ;r8d is .
+        je floater1
+		cmp byte [esi], byte 43 ;r8d is +
 		je fin1
-        cmp byte [esi], byte 45 ;-
+        cmp byte [esi], byte 45 ;r8d is +
 		je fin1
-		cmp byte [esi], byte 42 ;*
+		cmp byte [esi], byte 42 ;r8d is *
 		je fin1
-		cmp byte [esi], byte 47 ;/
+		cmp byte [esi], byte 47 ;r8d is /
 		je fin1
-        cmp byte [esi], byte 56 ;. 
-        je cal_rest
 		xchg r9, rax
 		mul r10d
 		xchg rax, r9
 		add r9b, byte [esi]
 		sub r9d, 48
-        inc r10
+        cont:
 		inc esi
+        add r15, r14
 		loop cal_first_op
-    ; if code gets here, something is wrong :)
-    jmp err
-    cal_rest:
-        ; first r9 should change to float, the number will be r9.xxxx
-        fild r9
-        xor r9, r9
-        xor r10, r10
-        jmp cal_first_op
-
-    negativate:
-        mov r11, -1
-	
-    fin1: ;st0 = st0 + r9 * 10 ^ (-r12)
-        fild r9
-        xchg r12, rcx
-        calc_op1_float:
-            fmul 0.1
-            loop calc_op1_float
-        xchg rcx, r12
-        fadd st0, st1
-        fmul r11
+	fin1:
 		xor r8, r8
 		mov r8b, byte [esi]
 		mov [operator], r8b
         cmp r9w, 0
         je not_first
-        fstp op11
+		mov [X], r9w
+        jmp ender
         not_first:
+        mov r15, [X2]
+        ender:
 		ret
-    err:
-        jmp exit
-
-
+    floater1:
+        inc r14
+        jmp cont
+	
 CAL_SECOND_OPERAND:
 	xor r9, r9
 	xor r10, r10
 	mov r10, 10
 	xor rax, rax
 	inc esi
+    xor r12, r12
+    xor r13, r13
 	cal_second_op:	
 		cmp byte [esi], byte 10 ;r8d is \n 
 		je fin2
+        cmp byte [esi], byte 46 ;r8d is .
+        je floater2    
 		xchg r9, rax
 		mul r10d
 		xchg rax, r9
 		add r9b, byte [esi]
 		sub r9d, 48
+        cont2:
 		inc esi
+        add r13, r12
 		loop cal_second_op
 	fin2:
-		mov [second_operand], r9w
+		mov [Y], r9w
 		ret
+    floater2:
+    inc r12
+    jmp cont2
 	
 CAL_RESULT:
 	xor r8, r8 ;first operand
 	xor r9, r9 ; second operand
 	xor r10, r10 ; operator
-	mov r8w, [first_operand]
-	mov r9w, [second_operand]
+	mov r8, [X]
+	mov r9, [Y]
 	mov r10b, [operator]
 	cmp r10b, 43
 	je sum
@@ -189,11 +176,15 @@ CAL_RESULT:
 		mov rax, r8
 		jmp finilize
 	multiplication:
+        add r15, r14
 		xor rax, rax
 		mov rax, r8
 		mul r9
 		jmp finilize
 	division:
+        cdq
+        xor r15, r13
+        sub r15, r13
 		xor rax, rax
 		mov rax, r8
 		div r9
@@ -203,10 +194,16 @@ CAL_RESULT:
 		xor rsi, rsi
 		mov esi, temp_array
 		xor rbx, rbx
+        xor r14, r14 ;count poistions 
 		mov bx, 10
 		xor r10, r10; size of output
-        mov [first_operand], ax
+        mov [X], ax
+        ;dec r15 
 		create_output:
+            inc r14
+            cmp r14, r15
+            je put_dot
+            contoutput:
 			xor dx, dx
             div bx
 			mov [esi], dx
@@ -226,4 +223,8 @@ CAL_RESULT:
 			cmp esi, temp_array
 			jne print_output
         ret
+        put_dot:
+            mov [esi], dword -2
+            inc esi
+            jmp contoutput
         
