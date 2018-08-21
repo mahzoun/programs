@@ -17,7 +17,6 @@ int main() {
     ss.str(input);
     string word, attribute, value;
     size_t pos;
-    cout << "input\t" << input << endl;
     while(getline(ss, word, ' ')){
       if(word[0] == '<'){
         string tag;
@@ -34,11 +33,9 @@ int main() {
             tag=tag.substr(0,tag.length()-1);
           if(father_tag == ""){
             father_tag = tag;
-            cout << "father \t" << father_tag << "\t" << tag << endl;
           }
           else{
             father_tag = father_tag + "." + tag;
-            cout << "father \t" << father_tag << "\t" << tag << endl;
           }
         }
       }
