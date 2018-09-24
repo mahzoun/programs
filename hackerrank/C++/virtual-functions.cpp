@@ -48,7 +48,7 @@ public:
     }
   }
   void putdata() {
-    cout << Student::name << " " << Student::age << " " << Student::sum << " " << Student::cur_id << endl;
+    cout << Student::name << " " << Student::age << " " << Student::sum << " " Student::cur_id << endl;
   }
 };
 int Professor::id = 0;
