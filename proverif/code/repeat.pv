@@ -1,0 +1,18 @@
+(* This file illustrates some approximations made by Proverif.
+ * The protocol ensures secrecy but the Horn clause abstraction
+ * introduces the possiblity of several executions, breaking
+ * secrecy.
+ * Note that secrecy can be proved if the name is generated
+ * after the input, because x = n[x] is impossible. *)
+
+free c : channel.
+free s : bitstring [private].
+
+query attacker(s).
+
+set verboseClauses = short.
+
+process
+  new n:bitstring;
+  in(c,x:bitstring);
+  if x = n then out(c,s) else out(c,n)

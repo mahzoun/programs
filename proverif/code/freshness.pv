@@ -1,0 +1,32 @@
+(* Illustration of Proverif's approximations
+ * regarding nonces. *)
+
+free c : channel.
+free s : bitstring [private].
+
+type key.
+fun enc(bitstring,key):bitstring.
+reduc forall m:bitstring, k:key;
+  dec(enc(m,k),k) = m.
+
+query attacker(s).
+
+set verboseClauses = short.
+
+process
+  new k:key;
+  in(c,x:bitstring);
+  new n:bitstring;
+  in(c,y:bitstring);
+  if y = enc(n,k)
+  then out(c,s)
+  else out(c,enc(n,k))
+
+(* Secrecy is proved if the second new is delayed
+ * after the input of y, which makes it obvious
+ * for Proverif that y = enc(n,k) is impossible.
+ *
+ * Note that adding a ! before the first input
+ * does not change anything: secrecy is proved with
+ * the "late" new, cannot be proved without it.
+ * Hence linearity is not the issue. *)

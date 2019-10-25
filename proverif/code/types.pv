@@ -1,0 +1,27 @@
+type t1.
+type t2.
+
+type key.
+fun enc(bitstring,key):bitstring.
+reduc forall x:bitstring, k:key;
+  dec(enc(x,k),k) = x.
+
+free c : channel.
+free d : channel.
+free k : key [private].
+free secret : bitstring [private].
+
+query attacker(secret).
+
+set ignoreTypes = true.
+(* By default the process does not check types at runtime,
+ * so attacks do not need to be well-typed.
+ * Try to change this setting. *)
+
+process
+  (in(c,x:t1);
+   in(c,y:bitstring);
+   if y = enc((x,x),k) then out(c,secret)) |
+  new elt2:t2;
+  out(c,elt2);
+  out(c,enc((elt2,elt2),k))

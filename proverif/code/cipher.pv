@@ -1,0 +1,12 @@
+fun enc(bitstring,bitstring):bitstring.
+fun dec(bitstring,bitstring):bitstring.
+equation forall m:bitstring, n:bitstring;
+  enc(dec(m,n),n) = m.
+equation forall m:bitstring, n:bitstring;
+  dec(enc(m,n),n) = m.
+
+set verboseClauses = short.
+
+free c : channel.
+query attacker(c).
+process in(c,x:bitstring);out(c,enc(x,x))

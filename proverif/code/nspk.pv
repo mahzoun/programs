@@ -1,0 +1,48 @@
+type pkey.
+type skey.
+fun pk(skey):pkey.
+fun aenc(bitstring,pkey):bitstring.
+reduc forall x:bitstring, sk:skey;
+  adec(aenc(x,pk(sk)),sk) = x.
+
+fun senc(bitstring,bitstring):bitstring.
+reduc forall x:bitstring, k:bitstring;
+  sdec(senc(x,k),k) = x.
+
+free c : channel.
+free sec : bitstring[private].
+(* The initiator engages with agent B represented
+ * by its public key pkb. *)
+let initiator(ska:skey,pkb:pkey) =
+  let pka = pk(ska) in
+  new na:bitstring;
+  out(c,aenc((pka,na),pkb));
+  in(c,x:bitstring);
+  (* The next line is equivalent to a "let"
+   * for decryption, followed by projections,
+   * and an equality test against na. *)
+  let (=pkb, =na,nb:bitstring) = adec(x,ska) in
+  out(c,aenc(nb,pkb)).
+
+(* The responder is willing to engage with any agent.
+ * The "honest" parameter is meant to be the public key
+ * of an honest agent, pka in this case. *)
+let responder(skb:skey,honest:pkey) =
+  let pkb = pk(skb) in
+  in(c, x:bitstring);
+  new nb:bitstring;
+  let (pka:pkey, na:bitstring) = adec(x, skb) in
+  out(c, aenc((pkb, na, nb), pka));
+  in(c, y:bitstring);
+  if nb = adec(y, skb) then
+  if pka = honest then
+  out(c, senc(sec, nb)).
+
+query attacker(sec).
+
+process
+  new ska:skey;
+  new skb:skey;
+  let pka=pk(ska) in out(c, pka);
+  let pkb=pk(skb) in out(c, pkb);
+  ( in(c, x:pkey); initiator(ska, x) | responder(skb, pka) )

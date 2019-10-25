@@ -1,0 +1,6 @@
+free s : bitstring [private].
+free p : bitstring [private].
+free c : channel.
+
+query attacker(c). (* Try changing to p *)
+process out(c,p
