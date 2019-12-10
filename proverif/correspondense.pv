@@ -1,0 +1,12 @@
+fun h(bitstring):bitstring.
+channel c.
+
+event StartI().
+event EndR().
+
+query event(EndR()) ==> event(StartI()).
+
+process
+  new n:bitstring;
+  ( (event StartI();out(c,n))
+  | (in(c,x:bitstring); if x=n then event EndR()) )
