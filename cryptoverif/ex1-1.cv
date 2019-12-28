@@ -58,10 +58,11 @@ let LR(k: key, mk: mkey, b0: bool) =
 let DEC(k: key, mk: mkey) = 
 	! i <= Nd
 	in(dec_ch, cipher: bitstring); 
+	let (e: bitstring, m:macres) = cipher in (
 	find j<=n suchthat defined(cipher'[j]) && cipher'[j] = cipher then
-		yield
+		(let (e':bitstring, m':macres) = cipher'[j] in (if m = m' then yield else out(dec_ch, dec'(k, mk, cipher))))
 	else
-		out(dec_ch, dec'(k, mk, cipher)).
+		out(dec_ch, dec'(k, mk, cipher))).
 
 
 process 
