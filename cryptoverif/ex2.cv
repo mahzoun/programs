@@ -3,38 +3,47 @@
 param n.
 
 
-type pkey [bounded].
-type skey [bounded].
-type keyseed [large,fixed].
+type key [bounded].
+type keyseed [large, fixed].
+type hasht [large, fixed].
+type seed [large, fixed].
+type hashkey [bounded].
 
-(* Shared-key encryption (CPA Stream cipher) *)
+proba POW.
 
-proba Penc.
-proba Penccoll.
+expand ROM_hash(hashkey, seed, hasht, hash, hashoracle, qH).
 
-expand IND_CCA2_public_key_enc(keyseed, pkey, skey, bitstring, bitstring, skgen, pkgen, enc, dec, injbot, Z, Penc, Penccoll).
+expand OW_trapdoor_perm(keyseed, key, key, seed, pkgen, skgen, f, mf, POW).
+
+expand Xor(hasht, xor, zero).
 
 (* Queries *)
 query secret b.
 
 
-channel c, lR, cA, start, dec_ch.
+channel c, lR, cA, start, hstart, hret, dec_ch.
 
 
-let LR(pk: pkey, sk: skey, b0: bool) =
+let LR(pk: key, hk: hashkey, b0: bool) =
 	! i <= n
-	in(lR, (m0: bitstring, m1: bitstring));
-	if Z(m0) = Z(m1) then
-	let cipher':bitstring = enc(if b0 then m0 else m1, pk) in 
-	out(lR, cipher').
+	in(lR, (m0: hasht, m1: hasht));
+	let menc = if b0 then m0 else m1 in 
+	new x: seed;
+	let aa = f(pk, x) in
+	let bb = xor(hash(hk, x), menc) in 
+	out(lR, (aa, bb)).
 
 	
 process 
+	in(hstart, ());
+	new hk:hashkey;
+	out(hret, ());
+	hashoracle(hk)|
 	in(start, ());
 	new b: bool;
 	new rk: keyseed;
 	let pk = pkgen(rk) in
 	let sk = skgen(rk) in
-	out(c, (pk));
-	LR(pk, sk, b) 
+	out(c, pk);
+	LR(pk, hk, b) 
 
