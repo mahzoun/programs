@@ -1,6 +1,7 @@
 (* Exercise 3 *)
 
 param n.
+param NA, NB, NS.
 
 type key [fixed].
 type nonce [large, fixed].
@@ -13,9 +14,10 @@ expand IND_CPA_INT_CTXT_sym_enc(key, bitstring, bitstring, enc, dec, injbot, Z, 
 
 (* Shared-key encryption (CPA Stream cipher) *)
 
-event evA.
-event evB.
-query evB ==> evA.
+event evA(T, T, nonce).
+event evB(T, T, nonce).
+query x:T, y:T, z: nonce; 
+	inj-event(evB(x, y, z)) ==> inj-event(evA(x, y, z)).
 
 channel c, cA, cB, cS, start.
 const A: T.
@@ -31,13 +33,13 @@ let ProcB(kBS: key) =
 	out(cB, (A, B, M)); 
 	in(cB, MM: bitstring);
 	let injbot((=m5, =A, =N)) = dec(MM, kBS) in 
-	event evB.
+	event evB(B, A, N).
 
 let ProcA(kAS: key) = 
 	in(cA, ());
 	out(cA, A);
 	in(cA, N: nonce);
-	event evA;
+	event evA(B, A, N);
 	out(cA, enc( (m3, B, N), kAS)).
 
 let ProcS(kAS: key, kBS: key) = 
@@ -51,5 +53,5 @@ process
 	new kAS: key;
 	new kBS: key;
 	out(c, ());
-	ProcA(kAS) | ProcB(kBS) | ProcS(kAS, kBS)
+	((! NA ProcA(kAS)) | (! NB ProcB(kBS)) | (!NS  ProcS(kAS, kBS)))
 	
