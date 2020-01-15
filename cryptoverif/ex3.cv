@@ -1,0 +1,55 @@
+(* Exercise 3 *)
+
+param n.
+
+type key [fixed].
+type nonce [large, fixed].
+type T[fixed].
+
+proba Penc.
+proba Pencctxt.
+
+expand IND_CPA_INT_CTXT_sym_enc(key, bitstring, bitstring, enc, dec, injbot, Z, Penc, Pencctxt). 
+
+(* Shared-key encryption (CPA Stream cipher) *)
+
+event evA.
+event evB.
+query evB ==> evA.
+
+channel c, cA, cB, cS, start.
+const A: T.
+const B: T.
+const m3: bitstring.
+const m5: bitstring.
+
+let ProcB(kBS: key) = 
+	in(cB, =A);
+	new N:nonce;
+	out(cB, N);
+	in(cB, M: bitstring);
+	out(cB, (A, B, M)); 
+	in(cB, MM: bitstring);
+	let injbot((=m5, =A, =N)) = dec(MM, kBS) in 
+	event evB.
+
+let ProcA(kAS: key) = 
+	in(cA, ());
+	out(cA, A);
+	in(cA, N: nonce);
+	event evA;
+	out(cA, enc( (m3, B, N), kAS)).
+
+let ProcS(kAS: key, kBS: key) = 
+	in(cS, (=A, =B, cipher: bitstring));
+	let injbot((=m3, =A, N':nonce)) = dec(cipher, kBS) in
+	out(cB, enc((m5, A, N'), kBS)).
+
+
+process 
+	in(start, ());
+	new kAS: key;
+	new kBS: key;
+	out(c, ());
+	ProcA(kAS) | ProcB(kBS) | ProcS(kAS, kBS)
+	
