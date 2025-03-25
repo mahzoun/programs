@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["FieldValue","WireType"],"fn":["parse_field","parse_message","parse_varint","unpack_tag"],"struct":["Field","Person","PhoneNumber"],"trait":["ProtoMessage"]};
