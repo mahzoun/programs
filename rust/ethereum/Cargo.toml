@@ -1,0 +1,10 @@
+[package]
+name = "ethereum"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ethers = "2.0.0"
+ethers-providers = { version = "2.0", features = ["ws"] }
+tokio = { version = "1", features = ["full"] }
+futures-util = "0.3"
